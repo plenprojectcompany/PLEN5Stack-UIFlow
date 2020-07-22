@@ -5,7 +5,7 @@
 
 1. Download this repository from [here](https://github.com/plenprojectcompany/PLEN5Stack-UIFlow/archive/master.zip).
 2. Access to [UIFlow](http://flow.m5stack.com/)
-3. [Custom] -> [Open \*.m5b file] -> [plen5stacklib.m5b]
+3. [Custom] -> [Open \*.m5b file] -> [PLEN5StackLibrary.m5b]
 
 ## Copyright (c) 2020,
 - [Isaki](https://github.com/IsakiMatsubara)
