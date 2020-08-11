@@ -3,7 +3,7 @@
 
 ## 使い方
 
-1. [こちら](https://github.com/plenprojectcompany/PLEN5Stack-UIFlow/archive/master.zip)からデータをダウンロードする。
+1. [こちら](https://github.com/plenprojectcompany/PLEN5Stack-UIFlow/archive/master.zip)から当レポジトリをダウンロードする。
 2. [UIFlow](http://flow.m5stack.com/)にアクセスする。
 3. [Custom] -> [Open \*.m5b file] -> [PLEN5StackLibrary.m5b]
 
