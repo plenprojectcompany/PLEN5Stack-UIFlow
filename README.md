@@ -1,6 +1,12 @@
 ﻿PLEN5Stack for UIFlow | PLEN Project Company Inc.
 ===============================================================================
 
+## 使い方
+
+1. [こちら](https://github.com/plenprojectcompany/PLEN5Stack-UIFlow/archive/master.zip)からデータをダウンロードする。
+2. [UIFlow](http://flow.m5stack.com/)にアクセスする。
+3. [Custom] -> [Open \*.m5b file] -> [PLEN5StackLibrary.m5b]
+
 ## How to use
 
 1. Download this repository from [here](https://github.com/plenprojectcompany/PLEN5Stack-UIFlow/archive/master.zip).
