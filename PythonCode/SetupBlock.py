@@ -38,7 +38,7 @@ def servoWrite(num, degrees):
 
 def setAngle(angle,time):
   step=[0,0,0,0,0,0,0,0]
-  time/=5*MotionSpeed/100
+  time/=5
   for i in range(8):
     target = ServoDefaultValue[i] - angle[i]
     if(target != ServoCurrentValue[i]):
@@ -114,7 +114,7 @@ def MotionStart(MotionNumber):
         MotionCount+=1
       else:
         MotionCountBefore = MotionCount
-        setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount])
+        setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(MotionSpeed / 100))
         while(MotionCount == MotionCountBefore):
           wait_ms(1)
       for i in range(8):
