@@ -3,6 +3,7 @@ from machine import Pin, I2C
 import re
 import math
 import machine, neopixel
+import urequests
 
 #変数の定義
 ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
@@ -55,24 +56,43 @@ def GetTime(mode):
       GetData = GetData.replace(' ', ':')
       TimeList = GetData.split(':')
 
-      if(mode == 0): #年
+      if(mode == 1): #年
         return TimeList[6]
-      elif(mode == 1): #月
+      elif(mode == 2): #月
         return TimeList[1]
-      elif(mode == 2): #日
+      elif(mode == 3): #日
         return TimeList[2]
-      elif(mode == 3): #曜日
+      elif(mode == 4): #曜日
         return TimeList[0]
-      elif(mode == 4): #時
+      elif(mode == 5): #時
         return TimeList[3]
-      elif(mode == 5): #分
+      elif(mode == 6): #分
         return TimeList[4]
-      elif(mode == 6): #秒
+      elif(mode == 7): #秒
         return TimeList[5]
+      elif(mode == 0): #リスト
+        return [TimeList[6],TimeList[1],TimeList[2],TimeList[0],TimeList[3],TimeList[4],TimeList[5]]
       else:
-        return -1
+        return "-1"
     except:
-        return -1
+      if(mode == 1): #年
+        return "0000"
+      elif(mode == 2): #月
+        return "0"
+      elif(mode == 3): #日
+        return "0"
+      elif(mode == 4): #曜日
+        return "---"
+      elif(mode == 5): #時
+        return "00"
+      elif(mode == 6): #分
+        return "00"
+      elif(mode == 7): #秒
+        return "00"
+      elif(mode == 0): #リスト
+        return ["0000","0","0","---","00","00","00"]
+      else:
+        return "-1"
 
 #初期化
 write8(0xFE, 0x85)
