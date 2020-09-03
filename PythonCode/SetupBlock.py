@@ -14,9 +14,7 @@ ServoCurrentValue = [0] * 8
 ServoBeforeValue = [0] * 8
 i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
 np = neopixel.NeoPixel(machine.Pin(26), 2)
-global MotionCount
 MotionCount = 0
-MotionSpeed = 100
 
 for i in range(8):
   ServoCurrentValue[i] = ServoDefaultValue[i]
@@ -48,8 +46,6 @@ def setAngle(angle,time):
       ServoCurrentValue[m]+=step[m]
       servoWrite(m,ServoCurrentValue[m]/10)
     wait_ms(1)
-  global MotionCount
-  MotionCount+=1
 
 #初期化
 write8(0xFE, 0x85)
@@ -64,9 +60,10 @@ CurrentLEDValue[1] = [50, 0, 0]
 np[0] = CurrentLEDValue[0]
 np[1] = CurrentLEDValue[1]
 np.write()
+MotionSpeed = 100
 
-def MotionStart(MotionNumber):
-    global MotionCount
+def MotionStart(MotionNumber,Speed):
+    MotionCount = 0
 
     if(MotionNumber in MotionNumberCache): #キャッシュされているか確認
       CacheNumber = MotionNumberCache.index(MotionNumber)
@@ -114,13 +111,10 @@ def MotionStart(MotionNumber):
         MotionCount+=1
       else:
         MotionCountBefore = MotionCount
-        setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(MotionSpeed / 100))
-        while(MotionCount == MotionCountBefore):
-          wait_ms(1)
+        setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
+        wait_ms(int(TransitionTimeArray[MotionCount]/(Speed / 100) / 5))
+        MotionCount += 1
       for i in range(8):
         ServoBeforeValue[i] = SearvoArrayCheck[i]
     MotionCount = -1
-#初期化完了まで待つ
-while(MotionCount != 1):
-  wait_ms(1)
 #セットアップ完了
