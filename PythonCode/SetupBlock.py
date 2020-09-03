@@ -47,6 +47,33 @@ def setAngle(angle,time):
       servoWrite(m,ServoCurrentValue[m]/10)
     wait_ms(1)
 
+def GetTime(mode):
+    try:
+      req = urequests.request(method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
+      GetData = req.text
+      GetData = GetData.replace('  ', ':')
+      GetData = GetData.replace(' ', ':')
+      TimeList = GetData.split(':')
+
+      if(mode == 0): #年
+        return TimeList[6]
+      elif(mode == 1): #月
+        return TimeList[1]
+      elif(mode == 2): #日
+        return TimeList[2]
+      elif(mode == 3): #曜日
+        return TimeList[0]
+      elif(mode == 4): #時
+        return TimeList[3]
+      elif(mode == 5): #分
+        return TimeList[4]
+      elif(mode == 6): #秒
+        return TimeList[5]
+      else:
+        return -1
+    except:
+        return -1
+
 #初期化
 write8(0xFE, 0x85)
 write8(0xFA, 0x00)
