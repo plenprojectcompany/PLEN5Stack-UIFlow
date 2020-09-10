@@ -1,1 +1,1 @@
-MotionSpeed = ${Speed}
+Library_MotionSpeed = ${Speed}

@@ -1,1 +1,1 @@
-GetTime(${mode})
+Library_GetTime(${mode})

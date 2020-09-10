@@ -6,49 +6,48 @@ import machine, neopixel
 import urequests
 
 #変数の定義
-ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
-MotionNumberCache = []
-TransitionTimeArrayCache = []
-SearvoArrayCache = []
-CurrentLEDValue = [(0,0,0),(0,0,0)]
-ServoCurrentValue = [0] * 8
-ServoBeforeValue = [0] * 8
-i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
-np = neopixel.NeoPixel(machine.Pin(26), 2)
-MotionCount = 0
+Library_ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
+Library_MotionNumberCache = []
+Library_TransitionTimeArrayCache = []
+Library_SearvoArrayCache = []
+Library_CurrentLEDValue = [(0,0,0),(0,0,0)]
+Library_ServoCurrentValue = [0] * 8
+Library_ServoBeforeValue = [0] * 8
+Library_i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
+Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 
 for i in range(8):
-  ServoCurrentValue[i] = ServoDefaultValue[i]
+  Library_ServoCurrentValue[i] = Library_ServoDefaultValue[i]
 
 #関数の定義
-def write8(addr, value):
+def Library_write8(addr, value):
   cmd = bytearray(2)
   cmd[0] = addr
   cmd[1] = value
-  i2c.writeto(0x6A, cmd)
+  Library_i2c.writeto(0x6A, cmd)
 
-def servoWrite(num, degrees):
+def Library_servoWrite(num, degrees):
   value = math.floor(degrees * 100 * 226 / 10000) + 0x66
-  write8(0x08 + num * 4, value)
+  Library_write8(0x08 + num * 4, value)
   if (value > 255):
-    write8(0x08 + num * 4 + 1, 0x01)
+    Library_write8(0x08 + num * 4 + 1, 0x01)
   else:
-    write8(0x08 + num * 4 + 1, 0x00)
+    Library_write8(0x08 + num * 4 + 1, 0x00)
 
-def setAngle(angle,time):
+def Library_setAngle(angle,time):
   step=[0,0,0,0,0,0,0,0]
   time/=5
   for i in range(8):
-    target = ServoDefaultValue[i] - angle[i]
-    if(target != ServoCurrentValue[i]):
-      step[i]=(target-ServoCurrentValue[i])/time
+    target = Library_ServoDefaultValue[i] - angle[i]
+    if(target != Library_ServoCurrentValue[i]):
+      step[i]=(target-Library_ServoCurrentValue[i])/time
   for n in range(time):
     for m in range(8):
-      ServoCurrentValue[m]+=step[m]
-      servoWrite(m,ServoCurrentValue[m]/10)
+      Library_ServoCurrentValue[m]+=step[m]
+      Library_servoWrite(m,Library_ServoCurrentValue[m]/10)
     wait_ms(1)
 
-def GetTime(mode):
+def Library_GetTime(mode):
     try:
       req = urequests.request(method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
       GetData = req.text
@@ -95,36 +94,36 @@ def GetTime(mode):
         return "-1"
 
 #初期化
-write8(0xFE, 0x85)
-write8(0xFA, 0x00)
-write8(0xFB, 0x00)
-write8(0xFC, 0x66)
-write8(0xFD, 0x00)
-write8(0x00, 0x01)
-setAngle([0, 0, 0, 0, 0, 0, 0, 0], 10)
-CurrentLEDValue[0] = [50, 0, 0]
-CurrentLEDValue[1] = [50, 0, 0]
-np[0] = CurrentLEDValue[0]
-np[1] = CurrentLEDValue[1]
-np.write()
-MotionSpeed = 100
+Library_write8(0xFE, 0x85)
+Library_write8(0xFA, 0x00)
+Library_write8(0xFB, 0x00)
+Library_write8(0xFC, 0x66)
+Library_write8(0xFD, 0x00)
+Library_write8(0x00, 0x01)
+Library_setAngle([0, 0, 0, 0, 0, 0, 0, 0], 100)
+Library_CurrentLEDValue[0] = [50, 0, 0]
+Library_CurrentLEDValue[1] = [50, 0, 0]
+Library_np[0] = Library_CurrentLEDValue[0]
+Library_np[1] = Library_CurrentLEDValue[1]
+Library_np.write()
+Library_MotionSpeed = 100
 
-def MotionStart(MotionNumber,Speed):
+def Library_MotionStart(MotionNumber,Speed):
     MotionCount = 0
 
-    if(MotionNumber in MotionNumberCache): #キャッシュされているか確認
-      CacheNumber = MotionNumberCache.index(MotionNumber)
+    if(MotionNumber in Library_MotionNumberCache): #キャッシュされているか確認
+      CacheNumber = Library_MotionNumberCache.index(MotionNumber)
       #キャッシュから取得する
-      TransitionTimeArray = TransitionTimeArrayCache[CacheNumber]
-      SearvoArray = SearvoArrayCache[CacheNumber]
+      TransitionTimeArray = Library_TransitionTimeArrayCache[CacheNumber]
+      SearvoArray = Library_SearvoArrayCache[CacheNumber]
     else:
       #モーションデータの読み取り
       ReadByteFrom = 50 + 860 * MotionNumber
       _data = bytearray(2)
       _data[0] = ReadByteFrom >> 8
       _data[1] = ReadByteFrom & 0xFF
-      i2c.writeto(0x56, _data)
-      ReadData = i2c.readfrom(0x56, 860)
+      Library_i2c.writeto(0x56, _data)
+      ReadData = Library_i2c.readfrom(0x56, 860)
 
       #モーションデータの切り出し
       MotionDataArray = str(ReadData).split('>')
@@ -143,9 +142,9 @@ def MotionStart(MotionNumber,Speed):
                     check2 = check2 & 0xffff
                   SearvoArray.append(check2)
       #読み込んだデータはキャッシュする
-      MotionNumberCache.append(MotionNumber)
-      TransitionTimeArrayCache.append(TransitionTimeArray)
-      SearvoArrayCache.append(SearvoArray)
+      Library_MotionNumberCache.append(MotionNumber)
+      Library_TransitionTimeArrayCache.append(TransitionTimeArray)
+      Library_SearvoArrayCache.append(SearvoArray)
 
     #サーボモーターを動かす
     ErrorFlag = False
@@ -154,14 +153,13 @@ def MotionStart(MotionNumber,Speed):
       for i in range(8):
         count1 = 8 * MotionCount + i
         SearvoArrayCheck.append(SearvoArray[count1])
-      if(ServoBeforeValue == SearvoArrayCheck): #同じサーボ角を繰り返す場合、動作スキップする
+      if(Library_ServoBeforeValue == SearvoArrayCheck): #同じサーボ角を繰り返す場合、動作スキップする
         MotionCount+=1
       else:
         MotionCountBefore = MotionCount
-        setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
+        Library_setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
         wait_ms(int(TransitionTimeArray[MotionCount]/(Speed / 100) / 5))
         MotionCount += 1
       for i in range(8):
-        ServoBeforeValue[i] = SearvoArrayCheck[i]
-    MotionCount = -1
+        Library_ServoBeforeValue[i] = SearvoArrayCheck[i]
 #セットアップ完了

@@ -1,7 +1,7 @@
-i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
-np = neopixel.NeoPixel(machine.Pin(26), 2)
+Library_i2c = Library_i2c(scl=Pin(22), sda=Pin(21), freq=400000)
+Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 try:
-  MotionSpeed
+  Library_MotionSpeed
 except NameError:
-  MotionSpeed = 100
-MotionStart(${モーションを再生する},MotionSpeed)
+  Library_MotionSpeed = 100
+Library_MotionStart(${モーションを再生する},Library_MotionSpeed)
