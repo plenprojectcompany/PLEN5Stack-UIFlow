@@ -1,5 +1,5 @@
 #インポート
-from machine import Pin, I2C
+import i2c_bus
 import re
 import math
 import machine, neopixel
@@ -13,7 +13,7 @@ Library_SearvoArrayCache = []
 Library_CurrentLEDValue = [(0,0,0),(0,0,0)]
 Library_ServoCurrentValue = [0] * 8
 Library_ServoBeforeValue = [0] * 8
-Library_i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
+Library_i2c = i2c_bus.get(i2c_bus.M_BUS)
 Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 
 for i in range(8):
@@ -36,7 +36,7 @@ def Library_servoWrite(num, degrees):
 
 def Library_setAngle(angle,time):
   step=[0,0,0,0,0,0,0,0]
-  time/=5
+  time/=15
   for i in range(8):
     target = Library_ServoDefaultValue[i] - angle[i]
     if(target != Library_ServoCurrentValue[i]):

@@ -1,5 +1,3 @@
-Library_i2c = I2C(scl=Pin(22), sda=Pin(21), freq=400000)
-Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 try:
   Library_MotionSpeed
 except NameError:

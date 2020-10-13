@@ -1,4 +1,3 @@
-Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 Library_CurrentLEDValue[0] = list(map(int,[${G}, ${R}, ${B}]))
 Library_CurrentLEDValue[1] = list(map(int,[${G}, ${R}, ${B}]))
 Library_np[0] = Library_CurrentLEDValue[0]
