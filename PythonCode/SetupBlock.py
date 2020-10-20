@@ -49,6 +49,7 @@ def Library_setAngle(angle,time):
 
 def Library_GetTime(mode):
     try:
+      remoteInit()
       req = urequests.request(method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
       GetData = req.text
       GetData = GetData.replace('  ', ':')
