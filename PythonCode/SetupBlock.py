@@ -53,12 +53,6 @@ def Library_setAngle(angle,Library_time):
     while(time.ticks_ms()-BeforeTime<25):
       wait_ms(1)
 
-def ContinueEnd(): #歩行終了モーション
-    wait_ms(50)
-    if(Library_MotionNumberFlag == -1):
-      if(Library_BeforeMotionNumber == 70 or Library_BeforeMotionNumber == 73):
-        Library_MotionStart(Library_BeforeMotionNumber,Library_MotionSpeed,1)
-
 def Library_GetTime(mode):
     try:
       remoteInit()
