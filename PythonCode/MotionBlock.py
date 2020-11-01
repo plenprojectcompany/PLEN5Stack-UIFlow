@@ -9,4 +9,6 @@ if(Library_BeforeMotionNumber!=Library_MotionNumberFlag):
 Library_MotionStart(${モーションを再生する},Library_MotionSpeed,0)
 Library_BeforeMotionNumber = ${モーションを再生する}
 Library_MotionNumberFlag = -1
-_thread.start_new_thread(ContinueEnd, ())
+if(Library_BeforeMotionNumber==70 or Library_BeforeMotionNumber==73):
+    #連続歩行終了確認スレッドを実行する
+    _thread.start_new_thread(ContinueEnd, ())

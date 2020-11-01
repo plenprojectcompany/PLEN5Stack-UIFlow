@@ -5,6 +5,7 @@ import math
 import machine, neopixel
 import urequests
 import _thread
+import time
 
 #変数の定義
 Library_ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
