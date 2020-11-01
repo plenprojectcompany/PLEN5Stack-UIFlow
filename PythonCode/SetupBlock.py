@@ -34,18 +34,20 @@ def Library_servoWrite(num, degrees):
   else:
     Library_write8(0x08 + num * 4 + 1, 0x00)
 
-def Library_setAngle(angle,time):
+def Library_setAngle(angle,Library_time):
   step=[0,0,0,0,0,0,0,0]
-  time/=15
+  Library_time/=25
   for i in range(8):
     target = Library_ServoDefaultValue[i] - angle[i]
     if(target != Library_ServoCurrentValue[i]):
-      step[i]=(target-Library_ServoCurrentValue[i])/time
-  for n in range(time):
+      step[i]=(target-Library_ServoCurrentValue[i])/Library_time
+  for n in range(Library_time):
+    BeforeTime=time.ticks_ms()
     for m in range(8):
       Library_ServoCurrentValue[m]+=step[m]
       Library_servoWrite(m,Library_ServoCurrentValue[m]/10)
-    wait_ms(1)
+    while(time.ticks_ms()-BeforeTime<25):
+      wait_ms(1)
 
 def Library_GetTime(mode):
     try:
@@ -159,7 +161,6 @@ def Library_MotionStart(MotionNumber,Speed):
       else:
         MotionCountBefore = MotionCount
         Library_setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
-        wait_ms(int(TransitionTimeArray[MotionCount]/(Speed / 100) / 5))
         MotionCount += 1
       for i in range(8):
         Library_ServoBeforeValue[i] = SearvoArrayCheck[i]
