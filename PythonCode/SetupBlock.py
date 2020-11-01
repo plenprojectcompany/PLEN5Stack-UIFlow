@@ -4,6 +4,7 @@ import re
 import math
 import machine, neopixel
 import urequests
+import _thread
 
 #変数の定義
 Library_ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
@@ -15,6 +16,8 @@ Library_ServoCurrentValue = [0] * 8
 Library_ServoBeforeValue = [0] * 8
 Library_i2c = i2c_bus.get(i2c_bus.M_BUS)
 Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
+Library_BeforeMotionNumber = -1
+Library_MotionNumberFlag = -1
 
 for i in range(8):
   Library_ServoCurrentValue[i] = Library_ServoDefaultValue[i]
@@ -48,6 +51,12 @@ def Library_setAngle(angle,Library_time):
       Library_servoWrite(m,Library_ServoCurrentValue[m]/10)
     while(time.ticks_ms()-BeforeTime<25):
       wait_ms(1)
+
+def ContinueEnd(): #歩行終了モーション
+    wait_ms(50)
+    if(Library_MotionNumberFlag == -1):
+      if(Library_BeforeMotionNumber == 70 or Library_BeforeMotionNumber == 73):
+        Library_MotionStart(Library_BeforeMotionNumber,Library_MotionSpeed,1)
 
 def Library_GetTime(mode):
     try:
@@ -111,7 +120,7 @@ Library_np[1] = Library_CurrentLEDValue[1]
 Library_np.write()
 Library_MotionSpeed = 100
 
-def Library_MotionStart(MotionNumber,Speed):
+def Library_MotionStart(MotionNumber,Speed,Mode):
     MotionCount = 0
 
     if(MotionNumber in Library_MotionNumberCache): #キャッシュされているか確認
@@ -156,12 +165,28 @@ def Library_MotionStart(MotionNumber,Speed):
       for i in range(8):
         count1 = 8 * MotionCount + i
         SearvoArrayCheck.append(SearvoArray[count1])
-      if(Library_ServoBeforeValue == SearvoArrayCheck): #同じサーボ角を繰り返す場合、動作スキップする
-        MotionCount+=1
-      else:
-        MotionCountBefore = MotionCount
-        Library_setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
-        MotionCount += 1
+
+      MotionFlag=True
+      if(MotionNumber==70 or MotionNumber==73): #連続歩行確認
+        if(Mode==1): #連続歩行を終了する
+          if(MotionCount<len(TransitionTimeArray)-2):
+            MotionCount+=1
+            MotionFlag=False
+        else: #連続歩行状態を確認
+          if(MotionCount>=len(TransitionTimeArray)-2): #歩行最後の2モーションはカット
+            MotionCount+=1
+            MotionFlag=False
+          elif(Library_BeforeMotionNumber==MotionNumber and MotionCount<=1): #歩き初め以外は歩行最初の2モーションはカット
+            MotionCount+=1
+            MotionFlag=False
+
+      if(MotionFlag):
+        if(Library_ServoBeforeValue == SearvoArrayCheck): #同じサーボ角を繰り返す場合、動作スキップする
+          MotionCount+=1
+        else:
+          MotionCountBefore = MotionCount
+          Library_setAngle(SearvoArrayCheck,TransitionTimeArray[MotionCount]/(Speed / 100))
+          MotionCount += 1
       for i in range(8):
         Library_ServoBeforeValue[i] = SearvoArrayCheck[i]
 #セットアップ完了
