@@ -25,6 +25,8 @@ global Library_MotionNumberFlag
 Library_MotionNumberFlag = -1
 global Library_ThreadFlag
 Library_ThreadFlag = False
+global Library_ThreadPlayFlag
+Library_ThreadPlayFlag = False
 global Library_PlayFlag
 Library_PlayFlag = False
 global Library_MotionSpeed
@@ -197,13 +199,16 @@ def Library_ContinueEnd(): #連続歩行終了を確認
     global Library_MotionNumberBefore
     global Library_MotionNumberFlag
     global Library_ThreadFlag
+    global Library_ThreadPlayFlag
     global Library_PlayFlag
     global Library_MotionSpeed
     Library_ThreadFlag = True
-    wait_ms(30)
+    wait_ms(1)
     if(Library_PlayFlag == False):
         if(Library_MotionNumberBefore == 70 or Library_MotionNumberBefore == 73):
+            Library_ThreadPlayFlag = True
             Library_MotionStart(Library_MotionNumberBefore,Library_MotionSpeed,2)
+            Library_ThreadPlayFlag = False
     Library_ThreadFlag = False
     Library_MotionNumberBefore = -1
     Library_MotionNumberFlag = -1
@@ -212,12 +217,15 @@ def Library_PlayMotion(MotionNumber):
     global Library_MotionNumberBefore
     global Library_MotionNumberFlag
     global Library_ThreadFlag
+    global Library_ThreadPlayFlag
     global Library_PlayFlag
     global Library_MotionSpeed
     Library_MotionNumberFlag = MotionNumber
     if(Library_MotionNumberBefore != Library_MotionNumberFlag):
         #連続歩行終了確認スレッドが終了するまで待つ
         while(Library_ThreadFlag):
+            wait_ms(1)
+    while(Library_ThreadPlayFlag):
             wait_ms(1)
     Library_PlayFlag = True
     Library_MotionStart(MotionNumber,Library_MotionSpeed,0)
@@ -236,6 +244,8 @@ def Library_SetServo(ServoAngleArray,Time):
     global Library_PlayFlag
     global Library_MotionSpeed
     Library_MotionNumberFlag = MotionNumber
+    while(Library_ThreadFlag):
+            wait_ms(1)
     if(Library_MotionNumberBefore != Library_MotionNumberFlag):
         #連続歩行終了確認スレッドが終了するまで待つ
         while(Library_ThreadFlag):
