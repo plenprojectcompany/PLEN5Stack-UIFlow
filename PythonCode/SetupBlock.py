@@ -17,8 +17,18 @@ Library_ServoCurrentValue = [0] * 8
 Library_ServoBeforeValue = [0] * 8
 Library_i2c = i2c_bus.get(i2c_bus.M_BUS)
 Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
-Library_BeforeMotionNumber = -1
+
+#グローバル変数の定義
+global Library_MotionNumberBefore
+Library_MotionNumberBefore = -1
+global Library_MotionNumberFlag
 Library_MotionNumberFlag = -1
+global Library_ThreadFlag
+Library_ThreadFlag = False
+global Library_PlayFlag
+Library_PlayFlag = False
+global Library_MotionSpeed
+Library_MotionSpeed = 100
 
 for i in range(8):
   Library_ServoCurrentValue[i] = Library_ServoDefaultValue[i]
@@ -100,22 +110,15 @@ def Library_GetTime(mode):
       else:
         return "-1"
 
-#初期化
-Library_write8(0xFE, 0x85)
-Library_write8(0xFA, 0x00)
-Library_write8(0xFB, 0x00)
-Library_write8(0xFC, 0x66)
-Library_write8(0xFD, 0x00)
-Library_write8(0x00, 0x01)
-Library_setAngle([0, 0, 0, 0, 0, 0, 0, 0], 100)
-Library_CurrentLEDValue[0] = [50, 0, 0]
-Library_CurrentLEDValue[1] = [50, 0, 0]
-Library_np[0] = Library_CurrentLEDValue[0]
-Library_np[1] = Library_CurrentLEDValue[1]
-Library_np.write()
-Library_MotionSpeed = 100
-
 def Library_MotionStart(MotionNumber,Speed,Mode):
+    #再生モードの確認
+    global Library_MotionNumberBefore
+    if(Mode!=2):
+        if(Library_MotionNumberBefore==70 or Library_MotionNumberBefore==73):
+            Mode=1
+        else:
+            Mode=0
+
     MotionCount = 0
 
     if(MotionNumber in Library_MotionNumberCache): #キャッシュされているか確認
@@ -155,7 +158,8 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
 
     #サーボモーターを動かす
     ErrorFlag = False
-    while MotionCount != len(TransitionTimeArray):
+    LoopTimes = len(TransitionTimeArray)
+    while MotionCount != LoopTimes:
       SearvoArrayCheck = []
       for i in range(8):
         count1 = 8 * MotionCount + i
@@ -163,15 +167,19 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
 
       MotionFlag=True
       if(MotionNumber==70 or MotionNumber==73): #連続歩行確認
-        if(Mode==1): #連続歩行を終了する
-          if(MotionCount<len(TransitionTimeArray)-2):
+        if(Mode==1): #中間のみ再生
+            if(MotionCount>=LoopTimes-2): #歩行最後の2モーションカット
+              MotionCount+=1
+              MotionFlag=False
+            elif(MotionCount<=1): #歩行最初の2モーションカット
+              MotionCount+=1
+              MotionFlag=False
+        if(Mode==2): #連続歩行を終了する(最後のモーションのみ再生)
+          if(MotionCount<LoopTimes-2):
             MotionCount+=1
             MotionFlag=False
-        else: #連続歩行状態を確認
-          if(MotionCount>=len(TransitionTimeArray)-2): #歩行最後の2モーションはカット
-            MotionCount+=1
-            MotionFlag=False
-          elif(Library_BeforeMotionNumber==MotionNumber and MotionCount<=1): #歩き初め以外は歩行最初の2モーションはカット
+        else: #歩行最後の2モーションカット
+          if(MotionCount>=LoopTimes-2): #歩行最後の2モーションカット
             MotionCount+=1
             MotionFlag=False
 
@@ -184,4 +192,71 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
           MotionCount += 1
       for i in range(8):
         Library_ServoBeforeValue[i] = SearvoArrayCheck[i]
+
+def Library_ContinueEnd(): #連続歩行終了を確認
+    global Library_MotionNumberBefore
+    global Library_MotionNumberFlag
+    global Library_ThreadFlag
+    global Library_PlayFlag
+    global Library_MotionSpeed
+    Library_ThreadFlag = True
+    wait_ms(30)
+    if(Library_PlayFlag == False):
+        if(Library_MotionNumberBefore == 70 or Library_MotionNumberBefore == 73):
+            Library_MotionStart(Library_MotionNumberBefore,Library_MotionSpeed,2)
+    Library_ThreadFlag = False
+    Library_MotionNumberBefore = -1
+    Library_MotionNumberFlag = -1
+
+def Library_PlayMotion(MotionNumber):
+    global Library_MotionNumberBefore
+    global Library_MotionNumberFlag
+    global Library_ThreadFlag
+    global Library_PlayFlag
+    global Library_MotionSpeed
+    Library_MotionNumberFlag = MotionNumber
+    if(Library_MotionNumberBefore != Library_MotionNumberFlag):
+        #連続歩行終了確認スレッドが終了するまで待つ
+        while(Library_ThreadFlag):
+            wait_ms(1)
+    Library_PlayFlag = True
+    Library_MotionStart(MotionNumber,Library_MotionSpeed,0)
+    Library_PlayFlag = False
+    Library_MotionNumberBefore = MotionNumber
+    if(MotionNumber==70 or MotionNumber==73):
+        #連続歩行終了確認スレッドを実行する
+        _thread.start_new_thread(Library_ContinueEnd, ())
+        while(Library_ThreadFlag==False):
+            wait_ms(1)
+
+def Library_SetServo(ServoAngleArray,Time):
+    global Library_MotionNumberBefore
+    global Library_MotionNumberFlag
+    global Library_ThreadFlag
+    global Library_PlayFlag
+    global Library_MotionSpeed
+    Library_MotionNumberFlag = MotionNumber
+    if(Library_MotionNumberBefore != Library_MotionNumberFlag):
+        #連続歩行終了確認スレッドが終了するまで待つ
+        while(Library_ThreadFlag):
+            wait_ms(1)
+    Library_PlayFlag = True
+    if(Time<25):
+        Time=25 #25msecが限界
+    Library_setAngle(ServoAngleArray,Time)
+    Library_PlayFlag = False
+
+#初期化
+Library_write8(0xFE, 0x85)
+Library_write8(0xFA, 0x00)
+Library_write8(0xFB, 0x00)
+Library_write8(0xFC, 0x66)
+Library_write8(0xFD, 0x00)
+Library_write8(0x00, 0x01)
+Library_setAngle([0, 0, 0, 0, 0, 0, 0, 0], 100)
+Library_CurrentLEDValue[0] = [50, 0, 0]
+Library_CurrentLEDValue[1] = [50, 0, 0]
+Library_np[0] = Library_CurrentLEDValue[0]
+Library_np[1] = Library_CurrentLEDValue[1]
+Library_np.write()
 #セットアップ完了
