@@ -203,7 +203,7 @@ def Library_ContinueEnd(): #連続歩行終了を確認
     global Library_PlayFlag
     global Library_MotionSpeed
     Library_ThreadFlag = True
-    wait_ms(1)
+    wait_ms(25)
     if(Library_PlayFlag == False):
         if(Library_MotionNumberBefore == 70 or Library_MotionNumberBefore == 73):
             Library_ThreadPlayFlag = True
