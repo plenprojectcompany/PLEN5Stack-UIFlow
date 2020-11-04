@@ -123,40 +123,75 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
 
     MotionCount = 0
 
+    if(MotionNumber==70 or MotionNumber==71 or MotionNumber==72 or MotionNumber==73):
+      #連続歩行用にキャッシュしておく
+      if(MotionNumber in Library_MotionNumberCache): #キャッシュされているか確認
+          None
+      else:
+          for Number in range(4):
+              #h歩行モーションデータの読み取り
+              ReadByteFrom = 50 + 860 * (70 + Number)
+              _data = bytearray(2)
+              _data[0] = ReadByteFrom >> 8
+              _data[1] = ReadByteFrom & 0xFF
+              Library_i2c.writeto(0x56, _data)
+              ReadData = Library_i2c.readfrom(0x56, 860)
+
+              #モーションデータの切り出し
+              MotionDataArray = str(ReadData).split('>')
+              TransitionTimeArray = []
+              SearvoArray = []
+
+              for i in MotionDataArray:
+                  if(re.match('^MF' + '{:02x}'.format(70 + Number),i)):
+                      check1=re.match('(MF....)(....)',i)
+                      TransitionTimeArray.append(int(check1.group(2),16))
+                      for n in range(8):
+                          check2 = int(i[10+4*n:10+4*n+4],16)
+                          if check2 >= 0x7fff:
+                            check2 = ~(~check2 & 0xffff)
+                          else:
+                            check2 = check2 & 0xffff
+                          SearvoArray.append(check2)
+              #読み込んだデータはキャッシュする
+              Library_MotionNumberCache.append(70 + Number)
+              Library_TransitionTimeArrayCache.append(TransitionTimeArray)
+              Library_SearvoArrayCache.append(SearvoArray)
+
     if(MotionNumber in Library_MotionNumberCache): #キャッシュされているか確認
-      CacheNumber = Library_MotionNumberCache.index(MotionNumber)
-      #キャッシュから取得する
-      TransitionTimeArray = Library_TransitionTimeArrayCache[CacheNumber]
-      SearvoArray = Library_SearvoArrayCache[CacheNumber]
+        CacheNumber = Library_MotionNumberCache.index(MotionNumber)
+        #キャッシュから取得する
+        TransitionTimeArray = Library_TransitionTimeArrayCache[CacheNumber]
+        SearvoArray = Library_SearvoArrayCache[CacheNumber]
     else:
-      #モーションデータの読み取り
-      ReadByteFrom = 50 + 860 * MotionNumber
-      _data = bytearray(2)
-      _data[0] = ReadByteFrom >> 8
-      _data[1] = ReadByteFrom & 0xFF
-      Library_i2c.writeto(0x56, _data)
-      ReadData = Library_i2c.readfrom(0x56, 860)
+        #モーションデータの読み取り
+        ReadByteFrom = 50 + 860 * MotionNumber
+        _data = bytearray(2)
+        _data[0] = ReadByteFrom >> 8
+        _data[1] = ReadByteFrom & 0xFF
+        Library_i2c.writeto(0x56, _data)
+        ReadData = Library_i2c.readfrom(0x56, 860)
 
-      #モーションデータの切り出し
-      MotionDataArray = str(ReadData).split('>')
-      TransitionTimeArray = []
-      SearvoArray = []
+        #モーションデータの切り出し
+        MotionDataArray = str(ReadData).split('>')
+        TransitionTimeArray = []
+        SearvoArray = []
 
-      for i in MotionDataArray:
-          if(re.match('^MF' + '{:02x}'.format(MotionNumber),i)):
-              check1=re.match('(MF....)(....)',i)
-              TransitionTimeArray.append(int(check1.group(2),16))
-              for n in range(8):
-                  check2 = int(i[10+4*n:10+4*n+4],16)
-                  if check2 >= 0x7fff:
-                    check2 = ~(~check2 & 0xffff)
-                  else:
-                    check2 = check2 & 0xffff
-                  SearvoArray.append(check2)
-      #読み込んだデータはキャッシュする
-      Library_MotionNumberCache.append(MotionNumber)
-      Library_TransitionTimeArrayCache.append(TransitionTimeArray)
-      Library_SearvoArrayCache.append(SearvoArray)
+        for i in MotionDataArray:
+            if(re.match('^MF' + '{:02x}'.format(MotionNumber),i)):
+                check1=re.match('(MF....)(....)',i)
+                TransitionTimeArray.append(int(check1.group(2),16))
+                for n in range(8):
+                    check2 = int(i[10+4*n:10+4*n+4],16)
+                    if check2 >= 0x7fff:
+                      check2 = ~(~check2 & 0xffff)
+                    else:
+                      check2 = check2 & 0xffff
+                    SearvoArray.append(check2)
+        #読み込んだデータはキャッシュする
+        Library_MotionNumberCache.append(MotionNumber)
+        Library_TransitionTimeArrayCache.append(TransitionTimeArray)
+        Library_SearvoArrayCache.append(SearvoArray)
 
     #サーボモーターを動かす
     ErrorFlag = False
@@ -168,7 +203,7 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
         SearvoArrayCheck.append(SearvoArray[count1])
 
       MotionFlag=True
-      if(MotionNumber==70 or MotionNumber==73): #連続歩行確認
+      if(MotionNumber==70 or MotionNumber==71 or MotionNumber==72 or MotionNumber==73): #連続歩行確認
         if(Mode==1): #中間のみ再生
             if(MotionCount>=LoopTimes-2): #歩行最後の2モーションカット
               MotionCount+=1
@@ -205,7 +240,7 @@ def Library_ContinueEnd(): #連続歩行終了を確認
     Library_ThreadFlag = True
     wait_ms(25)
     if(Library_PlayFlag == False):
-        if(Library_MotionNumberBefore == 70 or Library_MotionNumberBefore == 73):
+        if(Library_MotionNumberBefore == 70 or Library_MotionNumberBefore == 71 or Library_MotionNumberBefore == 72 or Library_MotionNumberBefore == 73):
             Library_ThreadPlayFlag = True
             Library_MotionStart(Library_MotionNumberBefore,Library_MotionSpeed,2)
             Library_ThreadPlayFlag = False
@@ -221,7 +256,18 @@ def Library_PlayMotion(MotionNumber):
     global Library_PlayFlag
     global Library_MotionSpeed
     Library_MotionNumberFlag = MotionNumber
-    if(Library_MotionNumberBefore != Library_MotionNumberFlag):
+    Check1 = 0
+    Check2 = 0
+    if(Library_MotionNumberBefore==70 or Library_MotionNumberBefore==73):
+        Check1 = 1
+    elif(Library_MotionNumberBefore==71 or Library_MotionNumberBefore==72):
+        Check1 = 2
+    if(Library_MotionNumberFlag==70 or Library_MotionNumberFlag==73):
+        Check2 = 1
+    elif(Library_MotionNumberFlag==71 or Library_MotionNumberFlag==72):
+        Check2 = 2
+
+    if(Check1 == 0 or Check1 != Check2):
         #連続歩行終了確認スレッドが終了するまで待つ
         while(Library_ThreadFlag):
             wait_ms(1)
@@ -231,7 +277,7 @@ def Library_PlayMotion(MotionNumber):
     Library_MotionStart(MotionNumber,Library_MotionSpeed,0)
     Library_PlayFlag = False
     Library_MotionNumberBefore = MotionNumber
-    if(MotionNumber==70 or MotionNumber==73):
+    if(MotionNumber==70 or MotionNumber==71 or MotionNumber==72 or MotionNumber==73):
         #連続歩行終了確認スレッドを実行する
         _thread.start_new_thread(Library_ContinueEnd, ())
         while(Library_ThreadFlag==False):
