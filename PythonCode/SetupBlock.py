@@ -289,13 +289,9 @@ def Library_SetServo(ServoAngleArray,Time):
     global Library_ThreadFlag
     global Library_PlayFlag
     global Library_MotionSpeed
-    Library_MotionNumberFlag = MotionNumber
+    #連続歩行終了確認スレッドが終了するまで待つ
     while(Library_ThreadFlag):
-            wait_ms(1)
-    if(Library_MotionNumberBefore != Library_MotionNumberFlag):
-        #連続歩行終了確認スレッドが終了するまで待つ
-        while(Library_ThreadFlag):
-            wait_ms(1)
+        wait_ms(1)
     Library_PlayFlag = True
     if(Time<25):
         Time=25 #25msecが限界
