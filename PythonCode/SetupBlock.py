@@ -19,17 +19,11 @@ Library_i2c = i2c_bus.get(i2c_bus.M_BUS)
 Library_np = neopixel.NeoPixel(machine.Pin(26), 2)
 
 #グローバル変数の定義
-global Library_MotionNumberBefore
 Library_MotionNumberBefore = -1
-global Library_MotionNumberFlag
 Library_MotionNumberFlag = -1
-global Library_ThreadFlag
 Library_ThreadFlag = False
-global Library_ThreadPlayFlag
 Library_ThreadPlayFlag = False
-global Library_PlayFlag
 Library_PlayFlag = False
-global Library_MotionSpeed
 Library_MotionSpeed = 100
 
 for i in range(8):
@@ -231,12 +225,7 @@ def Library_MotionStart(MotionNumber,Speed,Mode):
         Library_ServoBeforeValue[i] = SearvoArrayCheck[i]
 
 def Library_ContinueEnd(): #連続歩行終了を確認
-    global Library_MotionNumberBefore
-    global Library_MotionNumberFlag
-    global Library_ThreadFlag
-    global Library_ThreadPlayFlag
-    global Library_PlayFlag
-    global Library_MotionSpeed
+    global Library_MotionNumberBefore,Library_MotionNumberFlag,Library_ThreadFlag,Library_ThreadPlayFlag,Library_PlayFlag,Library_MotionSpeed
     Library_ThreadFlag = True
     wait_ms(25)
     if(Library_PlayFlag == False):
@@ -249,12 +238,7 @@ def Library_ContinueEnd(): #連続歩行終了を確認
     Library_MotionNumberFlag = -1
 
 def Library_PlayMotion(MotionNumber):
-    global Library_MotionNumberBefore
-    global Library_MotionNumberFlag
-    global Library_ThreadFlag
-    global Library_ThreadPlayFlag
-    global Library_PlayFlag
-    global Library_MotionSpeed
+    global Library_MotionNumberBefore,Library_MotionNumberFlag,Library_ThreadFlag,Library_ThreadPlayFlag,Library_PlayFlag,Library_MotionSpeed
     Library_MotionNumberFlag = MotionNumber
     Check1 = 0
     Check2 = 0
@@ -284,11 +268,7 @@ def Library_PlayMotion(MotionNumber):
             wait_ms(1)
 
 def Library_SetServo(ServoAngleArray,Time):
-    global Library_MotionNumberBefore
-    global Library_MotionNumberFlag
-    global Library_ThreadFlag
-    global Library_PlayFlag
-    global Library_MotionSpeed
+    global Library_MotionNumberBefore,Library_MotionNumberFlag,Library_ThreadFlag,Library_PlayFlag,Library_MotionSpeed
     #連続歩行終了確認スレッドが終了するまで待つ
     while(Library_ThreadFlag):
         wait_ms(1)
