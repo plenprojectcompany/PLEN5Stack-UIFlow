@@ -1,2 +1,1 @@
-global Library_MotionSpeed
-Library_MotionSpeed = ${Speed}
+Library_SetSpeed(${Speed})
