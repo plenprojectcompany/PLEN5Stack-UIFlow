@@ -291,7 +291,6 @@ def Library_ServoSetUp():
         Library_write8(0x00, 0x01)
         Library_setAngle([0] * 8, 100)
         Library_SetLED(0, 0, 50, 0)
-        Library_ServoErrorFlag = False
     except:
         Library_ServoErrorFlag = True
 
