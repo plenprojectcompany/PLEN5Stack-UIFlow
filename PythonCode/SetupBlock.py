@@ -86,7 +86,8 @@ def Library_setAngle(angle, Library_time):
 def Library_GetTime(mode):
     OrganizeList = ["2000", "1", "1", "Sat", "00", "00", "00"]
     try:
-        remoteInit()
+        import wifiCfg
+        wifiCfg.autoConnect(lcdShow=False)
         req = urequests.request(
             method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
         GetData = req.text
@@ -160,7 +161,7 @@ def Library_MotionStart(MotionNumber, Mode):
             SearvoArrayCheck.append(SearvoArray[count1])
 
         MotionFlag = True
-        if MotionNumber in [70,71,72,73]:  # 連続歩行確認
+        if MotionNumber in [70, 71, 72, 73]:  # 連続歩行確認
             if Mode == 1:  # 中間のみ再生
                 if MotionCount >= LoopTimes - 2:  # 歩行最後の2モーションカット
                     MotionCount += 1
@@ -194,7 +195,7 @@ def Library_ContinueEnd():  # 連続歩行終了を確認
     Library_ThreadFlag = True
     wait_ms(25)
     if Library_PlayFlag == False:
-        if Library_MotionNumberBefore in [70,71,72,73]:
+        if Library_MotionNumberBefore in [70, 71, 72, 73]:
             Library_ThreadPlayFlag = True
             Library_MotionStart(Library_MotionNumberBefore, 2)
             Library_ThreadPlayFlag = False
