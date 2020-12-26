@@ -7,6 +7,7 @@ import neopixel
 import urequests
 import _thread
 import time
+import wifiCfg
 
 # 変数の定義
 Library_ServoDefaultValue = [1000, 630, 300, 600, 240, 600, 1000, 720]
@@ -86,16 +87,14 @@ def Library_setAngle(angle, Library_time):
 def Library_GetTime(mode):
     OrganizeList = ["2000", "1", "1", "Sat", "00", "00", "00"]
     try:
-        import wifiCfg
-        wifiCfg.autoConnect(lcdShow=False)
-        req = urequests.request(
-            method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
+        if wifiCfg.wlan_sta.isconnected()==False:
+            wifiCfg.autoConnect(lcdShow=False)
+        req = urequests.request(method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
         GetData = req.text
         GetData = GetData.replace('  ', ':')
         GetData = GetData.replace(' ', ':')
         TimeList = GetData.split(':')
-        OrganizeList = [TimeList[6], TimeList[1], TimeList[2],
-                        TimeList[0], TimeList[3], TimeList[4], TimeList[5]]
+        OrganizeList = [TimeList[6], TimeList[1], TimeList[2],TimeList[0], TimeList[3], TimeList[4], TimeList[5]]
     except:
         None
     if mode == 0:
