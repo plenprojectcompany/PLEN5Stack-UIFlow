@@ -1,3 +1,8 @@
+"""
+PLEN5StackLibrary Ver.1.1.1
+Copyright (c) 2020, PLEN Project Company Inc.
+"""
+
 # インポート
 import i2c_bus
 import re
@@ -6,6 +11,7 @@ import machine
 import neopixel
 import urequests
 import _thread
+import ntptime
 import time
 import wifiCfg
 
@@ -85,16 +91,17 @@ def Library_setAngle(angle, Library_time):
 
 
 def Library_GetTime(mode):
-    OrganizeList = ["2000", "1", "1", "Sat", "00", "00", "00"]
+    OrganizeList = ['2000', '1', '1', 'Sat', '00', '00', '00']
+    MonthList = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
     try:
         if wifiCfg.wlan_sta.isconnected()==False:
             wifiCfg.autoConnect(lcdShow=False)
-        req = urequests.request(method='GET', url='https://ntp-a1.nict.go.jp/cgi-bin/time', headers={})
-        GetData = req.text
-        GetData = GetData.replace('  ', ':')
+        ntp = ntptime.client(host='jp.pool.ntp.org', timezone=9)
+        GetData = ntp.formatDatetime('-', ':')
+        GetData = GetData.replace('-', ':')
         GetData = GetData.replace(' ', ':')
         TimeList = GetData.split(':')
-        OrganizeList = [TimeList[6], TimeList[1], TimeList[2],TimeList[0], TimeList[3], TimeList[4], TimeList[5]]
+        OrganizeList = [TimeList[0], MonthList[int(TimeList[1])-1], TimeList[2],TimeList[3][0:3], TimeList[4], TimeList[5], TimeList[6]]
     except:
         None
     if mode == 0:
