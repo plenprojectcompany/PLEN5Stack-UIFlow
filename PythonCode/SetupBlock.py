@@ -101,12 +101,14 @@ def Library_GetTime(mode):
         GetData = GetData.replace('-', ':')
         GetData = GetData.replace(' ', ':')
         TimeList = GetData.split(':')
-        OrganizeList = [TimeList[0], MonthList[int(TimeList[1])-1], TimeList[2],TimeList[3][0:3], TimeList[4], TimeList[5], TimeList[6]]
+        OrganizeList = [TimeList[0], MonthList[int(TimeList[1])-1], str(int(TimeList[2])),TimeList[3][0:3], TimeList[4], TimeList[5], TimeList[6]]
     except:
         None
     if mode == 0:
         return OrganizeList
-    elif OrganizeList[mode - 1]:
+    elif mode == 8:
+        return ntp.getTimestamp() + 946684800 - 32400
+    elif len(OrganizeList) > mode - 1:
         return OrganizeList[mode - 1]
     else:
         return "-1"
